@@ -1,0 +1,12 @@
+PACKAGE atk2-sc1
+
+MANIFEST
+target.py
+target.tf
+target_asm.tf
+target_cfg1_out.h
+target_check.tf
+target_inline_symbols.h
+target_offset.tf
+target_test.h
+target_user.txt

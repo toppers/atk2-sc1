@@ -1,0 +1,95 @@
+
+		TOPPERS/ATK2-SC1
+        ＜HSBRH850F1Kターゲット依存部(GCC版)マニュアル＞
+
+このドキュメントはHSBRH850F1Kターゲット依存部の情報を記述したものである．
+
+----------------------------------------------------------------------
+TOPPERS ATK2
+    Toyohashi Open Platform for Embedded Real-Time Systems
+    Automotive Kernel Version 2
+
+Copyright (C) 2014-2019 by Center for Embedded Computing Systems
+            Graduate School of Information Science, Nagoya Univ., JAPAN
+
+上記著作権者は，以下の (1)～(3)の条件を満たす場合に限り，本ドキュメ
+ント（本ドキュメントを改変したものを含む．以下同じ）を使用・複製・改
+変・再配布（以下，利用と呼ぶ）することを無償で許諾する．
+(1) 本ドキュメントを利用する場合には，上記の著作権表示，この利用条件
+    および下記の無保証規定が，そのままの形でドキュメント中に含まれて
+    いること．
+(2) 本ドキュメントを改変する場合には，ドキュメントを改変した旨の記述
+    を，改変後のドキュメント中に含めること．ただし，改変後のドキュメ
+    ントが，TOPPERSプロジェクト指定の開発成果物である場合には，この限
+    りではない．
+(3) 本ドキュメントの利用により直接的または間接的に生じるいかなる損害
+    からも，上記著作権者およびTOPPERSプロジェクトを免責すること．また，
+    本ドキュメントのユーザまたはエンドユーザからのいかなる理由に基づ
+    く請求からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+
+本ドキュメントは，AUTOSAR（AUTomotive Open System ARchitecture）仕様
+に基づいている．上記の許諾は，AUTOSARの知的財産権を許諾するものではな
+い．AUTOSARは，AUTOSAR仕様に基づいたソフトウェアを商用目的で利用する
+者に対して，AUTOSARパートナーになることを求めている．
+
+本ドキュメントは，無保証で提供されているものである．上記著作権者およ
+びTOPPERSプロジェクトは，本ドキュメントに関して，特定の使用目的に対す
+る適合性も含めて，いかなる保証も行わない．また，本ドキュメントの利用
+により直接的または間接的に生じたいかなる損害に関しても，その責任を負
+わない．
+
+$Id: target_user.txt 914 2020-07-25 06:13:13Z nces-mtakada $
+----------------------------------------------------------------------
+
+○概要
+
+HSBRH850F1Kターゲット依存部(GCC版)は，ルネサスエレクトロニクス社の
+RH850/F1Kを搭載した北斗電子製のHSBRH850F1Kをサポートしている．
+
+また実ターゲットシステムに加えて，Athrillを用いて実行することもできる.
+
+本フォルダはCCRH版/GHS版の共通部として参照される．
+
+○開発環境と動作確認条件
+
+開発環境として，WSL（Windows Subsystem for Linux)のUbuntu 16.04上で、以下のURLから
+ダウンロードした　GNU GCC Toolchainを使用している.
+
+    https://github.com/toppers/athrill-gcc-v850e2m/releases/tag/v1.1
+
+athrillおよびathrill-targetの環境は以下のURLから取得できる.
+
+    https://github.com/toppers/athrill
+    https://github.com/toppers/athrill-target-rh850f1x
+
+athrillの環境構築については箱庭WGのページを参照.
+    https://toppers.github.io/hakoniwa/single-robot-setup/single-robot-setup-index-windows-v850/
+
+○ビルドおよび実行
+
+    $ configure -T hsbrh850f1k_gcc
+    $ make 
+
+ATK2とathrill-targetが同じディレクトリにある場合、以下のコマンドで実行できる.
+
+    $ make run-athrill
+
+異なるディレクトリにある場合は、Makefile.targetにある `ATHRILLDIR` の指定を変更すればよい.
+
+athrillでのソースコードデバッグを行うために最適化オプションを `-O0` としている.変更を行う場合は
+Makefile.targetで該当箇所をコメントするとよい.
+
+また本環境でビルドしたバイナリはCS+とE1を用いてデバッグ実行も可能である.ただしCS+によるシンボル情報を用いた
+ソースコードデバッグ実行は行えない.
+E1を用いた接続に関する情報はCCRH版のドキュメントを参照.
+
+○変更履歴
+2019/05/24
+・targfet_hw_counter.h
+   TAUJn タイマへのアクセスをハーフワードからバイトアクセスへ変更
+・Athrill用にMakefile.targetのオプションを追加
+ 　
+2017/01/18
+ 新規作成
+
+以上 

@@ -1,0 +1,7 @@
+PACKAGE atk2-sc1
+
+MANIFEST
+configure.mtpj
+configure.py
+def.py
+README.txt

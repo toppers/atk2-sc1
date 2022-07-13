@@ -1,0 +1,17 @@
+PACKAGE atk2-sc1
+
+MANIFEST
+prc.py
+prc.tf
+prc_asm.tf
+prc_cfg1_out.h
+prc_def.csv
+prc_inline_symbols.h
+prc_insn.h
+prc_offset.tf
+prc_support.asm
+prc_tool.h
+prc_tool.c
+prc_user.txt
+start.asm
+v850asm.inc

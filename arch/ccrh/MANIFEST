@@ -1,0 +1,16 @@
+PACKAGE atk2-sc1
+
+MANIFEST
+common.py
+Compiler.h
+Compiler_Cfg.h
+configure_body.py
+gcc2ccrh.rb
+kernel_inline_symbols.h
+post_atk2.py
+post_cfg.py
+pre_cfg.py
+tool_cfg1_out.h
+updatepath.py
+stdint.h
+

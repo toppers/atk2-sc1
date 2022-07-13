@@ -1,0 +1,24 @@
+PACKAGE atk2-sc1
+
+hsbrh850f1k.h
+Makefile.target
+MANIFEST
+target.tf
+target_cfg1_out.h
+target_check.tf
+target_config.c
+target_config.h
+target_hw_counter.arxml
+target_hw_counter.h
+target_hw_counter.yaml
+target_kernel.h
+target_offset.tf
+target_serial.arxml
+target_serial.h
+target_serial.yaml
+target_sysmod.h
+target_test.h
+target_user.txt
+target_rename.def
+target_rename.h
+target_unrename.h

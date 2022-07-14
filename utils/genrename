@@ -42,7 +42,7 @@
 #  アの利用により直接的または間接的に生じたいかなる損害に関しても，そ
 #  の責任を負わない．
 # 
-#  @(#) $Id: genrename 2253 2011-09-11 01:23:40Z ertl-hiro $
+#  @(#) $Id: genrename 1210 2017-04-25 05:39:11Z ertl-honda $
 # 
 
 #
@@ -158,6 +158,31 @@ foreach $sym (@syms) {
 
 print FILE <<END;
 
+#ifdef TOPPERS_LABEL_ASM
+
+END
+
+foreach $sym (@syms) {
+	if ($sym =~ /^#(.*)$/) {
+		print FILE "/*\n";
+		print FILE " * ",$1,"\n";
+		print FILE " */\n";
+	}
+	elsif ($sym =~ /^INCLUDE[ \t]+(.*)$/) {
+		# do nothing
+	}
+	elsif ($sym ne "") {
+		generate_define($sym, "_");
+	}
+	else {
+		print FILE "\n";
+	}
+}
+
+print FILE <<END;
+
+#endif /* TOPPERS_LABEL_ASM */
+
 $includes
 #endif /* $header_defsym */
 END
@@ -196,6 +221,31 @@ foreach $sym (@syms) {
 }
 
 print FILE <<END;
+
+#ifdef TOPPERS_LABEL_ASM
+
+END
+
+foreach $sym (@syms) {
+	if ($sym =~ /^#(.*)$/) {
+		print FILE "/*\n";
+		print FILE " * ",$1,"\n";
+		print FILE " */\n";
+	}
+	elsif ($sym =~ /^INCLUDE[ \t]+(.*)$/) {
+		# do nothing
+	}
+	elsif ($sym ne "") {
+		generate_undef($sym, "_");
+	}
+	else {
+		print FILE "\n";
+	}
+}
+
+print FILE <<END;
+
+#endif /* TOPPERS_LABEL_ASM */
 
 $includes
 #endif /* $header_defsym */

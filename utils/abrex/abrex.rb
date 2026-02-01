@@ -195,33 +195,61 @@ def YamlToXml(aArgData, sEcuExtractRef, bVerbose)
     cXmlElements = cXmlArPackage.add_element("ELEMENTS")
 
     hPackageData.each{|sEcucModuleName, hEcucModuleData|
-      aModulePaths.push("/#{sPackageName}/#{sEcucModuleName}")
-      cXmlEcucModuleConfVal = cXmlElements.add_element("ECUC-MODULE-CONFIGURATION-VALUES")
-      cXmlEcucModuleConfVal.add_element(XML_SNAME).add_text(sEcucModuleName)
-      if (hEcucModuleData.has_key?("DefinitionRef"))
-        sEcuModuleDefinitionRef = hEcucModuleData["DefinitionRef"].dup
-        hEcucModuleData.delete("DefinitionRef")
-      else
-        if ( bVerbose == true )
-          puts("This #{sEcucModuleName} is not defined for 'DefinitionRef'.")
-        end
-        sEcuModuleDefinitionRef = sEcucModuleName
+      # ECUC-VALUE-COLLECTION は特別処理用に保存
+      hEcucValueCollection = nil
+      if (hEcucModuleData.is_a?(Hash) && hEcucModuleData.has_key?("ECUC-VALUES"))
+        hEcucValueCollection = hEcucModuleData.dup
+        hEcucModuleData.delete("ECUC-VALUES")
       end
-      cXmlEcucModuleConfVal.add_element("DEFINITION-REF", {"DEST" => "ECUC-MODULE-DEF"}).add_text(XML_ROOT_PATH + sEcuModuleDefinitionRef)
-      cXmlEcucModuleConfVal.add_element("ECUC-DEF-EDITION").add_text(XML_EDITION)
-      cXmlEcucModuleConfVal.add_element("IMPLEMENTATION-CONFIG-VARIANT").add_text("VARIANT-PRE-COMPILE")
-      cXmlContainers = cXmlEcucModuleConfVal.add_element("CONTAINERS")
 
-      # 各パラメータ用コンテナを作成する
-      hEcucModuleData.each{|sShortName, hParamInfo|
-        # DefinitionRef補完
-        if (!hParamInfo.has_key?("DefinitionRef"))
-          hParamInfo["DefinitionRef"] = sShortName
+      # ECUC-MODULE-CONFIGURATION-VALUES として処理
+      if (hEcucModuleData.is_a?(Hash) && !hEcucModuleData.empty?)
+        aModulePaths.push("/#{sPackageName}/#{sEcucModuleName}")
+        cXmlEcucModuleConfVal = cXmlElements.add_element("ECUC-MODULE-CONFIGURATION-VALUES")
+        cXmlEcucModuleConfVal.add_element(XML_SNAME).add_text(sEcucModuleName)
+        if (hEcucModuleData.has_key?("DefinitionRef"))
+          sEcuModuleDefinitionRef = hEcucModuleData["DefinitionRef"].dup
+          hEcucModuleData.delete("DefinitionRef")
+        else
+          if ( bVerbose == true )
+            puts("This #{sEcucModuleName} is not defined for 'DefinitionRef'.")
+          end
+          sEcuModuleDefinitionRef = sEcucModuleName
         end
+        cXmlEcucModuleConfVal.add_element("DEFINITION-REF", {"DEST" => "ECUC-MODULE-DEF"}).add_text(XML_ROOT_PATH + sEcuModuleDefinitionRef)
+        cXmlEcucModuleConfVal.add_element("ECUC-DEF-EDITION").add_text(XML_EDITION)
+        cXmlEcucModuleConfVal.add_element("IMPLEMENTATION-CONFIG-VARIANT").add_text("VARIANT-PRE-COMPILE")
+        cXmlContainers = cXmlEcucModuleConfVal.add_element("CONTAINERS")
 
-        cContainer = YamlToXml_make_container(sShortName, hParamInfo, XML_ROOT_PATH + sEcuModuleDefinitionRef)
-        cXmlContainers.add_element(cContainer)
-      }
+        # 各パラメータ用コンテナを作成する
+        hEcucModuleData.each{|sShortName, hParamInfo|
+          # DefinitionRef補完
+          if (hParamInfo.is_a?(Hash) && !hParamInfo.has_key?("DefinitionRef"))
+            hParamInfo["DefinitionRef"] = sShortName
+          end
+
+          if (hParamInfo.is_a?(Hash))
+            cContainer = YamlToXml_make_container(sShortName, hParamInfo, XML_ROOT_PATH + sEcuModuleDefinitionRef)
+            cXmlContainers.add_element(cContainer)
+          end
+        }
+      end
+
+      # ECUC-VALUE-COLLECTION の処理
+      if (!hEcucValueCollection.nil? && hEcucValueCollection.has_key?("ECUC-VALUES"))
+        aEcucValues = hEcucValueCollection["ECUC-VALUES"]
+        if (aEcucValues.is_a?(Array))
+          cXmlEcucValueCollection = cXmlElements.add_element("ECUC-VALUE-COLLECTION")
+          cXmlEcucValueCollection.add_element(XML_SNAME).add_text(sEcucModuleName)
+          # 元のARXMLから ECU-EXTRACT-REF を取得するか、デフォルト値を使用
+          cXmlEcucValueCollection.add_element("ECU-EXTRACT-REF", {"DEST" => "SYSTEM"}).add_text("/System/RcCar")
+          cXmlEcucValues = cXmlEcucValueCollection.add_element("ECUC-VALUES")
+          aEcucValues.each{|sRefPath|
+            cTemp = cXmlEcucValues.add_element("ECUC-MODULE-CONFIGURATION-VALUES-REF-CONDITIONAL")
+            cTemp.add_element("ECUC-MODULE-CONFIGURATION-VALUES-REF", {"DEST" => "ECUC-MODULE-CONFIGURATION-VALUES"}).add_text(sRefPath)
+          }
+        end
+      end
     }
   }
 
@@ -474,8 +502,10 @@ def XmlToYaml(sFirstFile, aExtraFile)
     hResult = {}
 
     cXmlData.elements.each("AUTOSAR/AR-PACKAGES/AR-PACKAGE"){|cElement1|
+      sPackageName = cElement1.elements["SHORT-NAME"].text()
+      
+      # ECUC-MODULE-CONFIGURATION-VALUES の処理
       cElement1.elements.each("ELEMENTS/ECUC-MODULE-CONFIGURATION-VALUES"){|cElement2|
-        sPackageName = cElement1.elements["SHORT-NAME"].text()
         if (!hResult.has_key?(sPackageName))
           hResult[sPackageName] = {}
         end
@@ -485,6 +515,26 @@ def XmlToYaml(sFirstFile, aExtraFile)
 
         cElement2.elements.each("CONTAINERS/ECUC-CONTAINER-VALUE"){|cElement3|
           XmlToYaml_parse_parameter(cElement3, hResult[sPackageName][sModuleName])
+        }
+      }
+
+      # ECUC-VALUE-COLLECTION の処理
+      cElement1.elements.each("ELEMENTS/ECUC-VALUE-COLLECTION"){|cElement2|
+        if (!hResult.has_key?(sPackageName))
+          hResult[sPackageName] = {}
+        end
+
+        sCollectionName = cElement2.elements["SHORT-NAME"].text()
+        hResult[sPackageName][sCollectionName] = {}
+
+        # ECUC-VALUES 以下の ECUC-MODULE-CONFIGURATION-VALUES-REF-CONDITIONAL の処理
+        cElement2.elements.each("ECUC-VALUES/ECUC-MODULE-CONFIGURATION-VALUES-REF-CONDITIONAL"){|cElement3|
+          sEcucModuleConfigRef = cElement3.elements["ECUC-MODULE-CONFIGURATION-VALUES-REF"].text()
+          # 参照情報を保存
+          if (!hResult[sPackageName][sCollectionName].has_key?("ECUC-VALUES"))
+            hResult[sPackageName][sCollectionName]["ECUC-VALUES"] = []
+          end
+          hResult[sPackageName][sCollectionName]["ECUC-VALUES"].push(sEcucModuleConfigRef)
         }
       }
     }

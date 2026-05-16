@@ -117,3 +117,8 @@ Rte:
         RteEventRef: /OneRunnable/ApplicationSwComponentType1/SwcInternalBehavior1/TimingEvent1
         RteMappedToTaskRef: /Os/Os/TASK1
         RteUsedOsEventRef: /Os/Os/EVENT1
+  Os_ValueCollection:
+    ECUC-VALUES:
+      - /Os/Os/OsOS
+      - /Os/Os/TASK1
+      - /Os/Os/EVENT1
